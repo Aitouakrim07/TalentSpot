@@ -1,0 +1,80 @@
+export const jobs = [
+    {
+        id: 1,
+        title: 'Développeur Full Stack React/Node',
+        company: 'TechMaroc Solutions',
+        country: 'Maroc',
+        city: 'Casablanca',
+        contract: 'CDI',
+        domain: 'Informatique',
+        salary: '15 000 - 20 000 MAD',
+        shortDescription: 'Nous cherchons un développeur passionné pour rejoindre notre équipe à Casa.',
+        description: "En tant que Développeur Full Stack, vous participerez à la conception et au développement de nos plateformes SaaS.\nStack : React, Node.js, PostgreSQL.\nExpérience requise : 3 ans minimum.",
+        keywords: ['React', 'Node.js', 'Full Stack', 'JavaScript']
+    },
+    {
+        id: 2,
+        title: 'Chef de Projet Digital',
+        company: 'Digital France Agency',
+        country: 'France',
+        city: 'Paris',
+        contract: 'CDI',
+        domain: 'Marketing',
+        salary: '45 000 - 55 000 €',
+        shortDescription: 'Pilotez des projets digitaux ambitieux pour nos grands comptes.',
+        description: "Vous serez en charge de la gestion de projets web et mobile, de la prise de brief à la livraison.\nCoordination des équipes techniques et créatives.",
+        keywords: ['Gestion de projet', 'Agile', 'Digital', 'Marketing']
+    },
+    {
+        id: 3,
+        title: 'Ingénieur DevOps',
+        company: 'CloudAtlas',
+        country: 'Maroc',
+        city: 'Rabat',
+        contract: 'CDI',
+        domain: 'Informatique',
+        salary: '18 000 - 25 000 MAD',
+        shortDescription: 'Expert AWS/Docker pour automatiser nos déploiements.',
+        description: "Mise en place de pipelines CI/CD, gestion de l'infrastructure cloud AWS, monitoring et optimisation des performances.",
+        keywords: ['DevOps', 'AWS', 'Docker', 'CI/CD']
+    },
+    {
+        id: 4,
+        title: 'Commercial BtoB',
+        company: 'SalesForceOne',
+        country: 'France',
+        city: 'Lyon',
+        contract: 'CDI',
+        domain: 'Commercial',
+        salary: '30 000 - 40 000 € + Primes',
+        shortDescription: 'Développez notre portefeuille client sur la région Rhône-Alpes.',
+        description: "Prospection, négociation et fidélisation de clients BtoB. Véhicule de fonction fourni.",
+        keywords: ['Vente', 'BtoB', 'Négociation', 'Commercial']
+    },
+    {
+        id: 5,
+        title: 'Stagiaire Assistant RH',
+        company: 'Recrutement & Co',
+        country: 'Maroc',
+        city: 'Marrakech',
+        contract: 'Stage',
+        domain: 'Ressources Humaines',
+        salary: '3 000 MAD',
+        shortDescription: 'Stage de 6 mois pour assister notre DRH.',
+        description: 'Sourcing de candidats, tri de CV, organisation des entretiens, gestion administrative du personnel.',
+        keywords: ['RH', 'Recrutement', 'Stage', 'Administration']
+    },
+    {
+        id: 6,
+        title: 'Alternant Développeur Mobile',
+        company: 'AppStudio',
+        country: 'France',
+        city: 'Bordeaux',
+        contract: 'Alternance',
+        domain: 'Informatique',
+        salary: 'Selon grille',
+        shortDescription: 'Rejoignez-nous pour apprendre le développement Flutter.',
+        description: "Participation au développement d'applications mobiles cross-platform en Flutter. Accompagnement par un lead dev senior.",
+        keywords: ['Mobile', 'Flutter', 'Alternance', 'App']
+    }
+];
