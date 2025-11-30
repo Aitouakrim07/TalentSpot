@@ -91,7 +91,7 @@ const JobDetailModal = ({ job }) => {
                     <p style={{ whiteSpace: 'pre-line' }}>{job.description}</p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                    {job.keywords.map((kw) => (
+                    {job.keywords && job.keywords.map((kw) => (
                         <span key={kw} style={{ background: '#f5f5f5', color: '#666', padding: '4px 10px', borderRadius: '12px', fontSize: '0.85rem' }}>
                             {kw}
                         </span>

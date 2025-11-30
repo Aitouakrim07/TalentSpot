@@ -1,29 +1,38 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { jobs as jobsData } from '../data/jobs';
 import JobList from '../components/JobList';
 import JobFilters from '../components/JobFilters';
 import JobDetailModal from '../components/JobDetailModal';
 
-const initialNewJob = {
-    title: '',
-    company: '',
-    country: 'Maroc',
-    city: '',
-    contract: 'CDI',
-    domain: '',
-    salary: '',
-    shortDescription: '',
-    description: '',
-    keywords: ''
-};
-
 const Jobs = () => {
-    const [jobs, setJobs] = useState(jobsData);
-    const [filteredJobs, setFilteredJobs] = useState(jobsData);
-    const [selectedJob, setSelectedJob] = useState(jobsData[0] || null);
+    const [jobs, setJobs] = useState([]);
+    const [filteredJobs, setFilteredJobs] = useState([]);
+    const [selectedJob, setSelectedJob] = useState(null);
     const [filters, setFilters] = useState({ keyword: '', country: '', city: '', contract: '' });
-    const [newJob, setNewJob] = useState(initialNewJob);
-    const [jobStatus, setJobStatus] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+
+    // Fetch jobs from API
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                const res = await fetch('/api/jobs');
+                if (!res.ok) throw new Error('Failed to fetch jobs');
+                const data = await res.json();
+                // Normalize _id to id for frontend compatibility if needed
+                const normalizedData = data.map(job => ({ ...job, id: job._id }));
+                setJobs(normalizedData);
+                setFilteredJobs(normalizedData);
+                if (normalizedData.length > 0) setSelectedJob(normalizedData[0]);
+            } catch (err) {
+                setError('Erreur de chargement des offres.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchJobs();
+    }, []);
 
     useEffect(() => {
         let result = jobs;
@@ -33,7 +42,7 @@ const Jobs = () => {
             result = result.filter((job) =>
                 job.title.toLowerCase().includes(lowerKw) ||
                 job.description.toLowerCase().includes(lowerKw) ||
-                job.keywords.some((k) => k.toLowerCase().includes(lowerKw))
+                (job.keywords && job.keywords.some((k) => k.toLowerCase().includes(lowerKw)))
             );
         }
 
@@ -49,32 +58,15 @@ const Jobs = () => {
         }
     }, [filters, jobs]);
 
-    const handleNewJobChange = (e) => {
-        const { name, value } = e.target;
-        setNewJob((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleAddJob = (e) => {
-        e.preventDefault();
-        const keywordsArray = newJob.keywords.split(',').map((k) => k.trim()).filter(Boolean);
-        const createdJob = {
-            ...newJob,
-            id: Date.now(),
-            keywords: keywordsArray,
-        };
-        setJobs((prev) => [createdJob, ...prev]);
-        setNewJob(initialNewJob);
-        setJobStatus('Offre ajoutée. Elle est visible dans la liste.');
-        setSelectedJob(createdJob);
-        setTimeout(() => setJobStatus(''), 3000);
-    };
-
     const jobsLayoutStyle = useMemo(() => ({
         display: 'grid',
         gridTemplateColumns: '1.15fr 1.85fr',
         gap: '24px',
         alignItems: 'start'
     }), []);
+
+    if (loading) return <div className="container text-center" style={{ padding: '50px' }}>Chargement...</div>;
+    if (error) return <div className="container text-center" style={{ padding: '50px', color: 'red' }}>{error}</div>;
 
     return (
         <div className="container" style={{ padding: '24px 0' }}>
@@ -83,65 +75,6 @@ const Jobs = () => {
             <div style={jobsLayoutStyle}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <JobFilters filters={filters} setFilters={setFilters} />
-
-                    <div style={{ background: 'white', padding: '16px', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
-                        <h3 style={{ marginBottom: '10px' }}>Ajouter une offre</h3>
-                        {jobStatus && <p style={{ color: 'var(--primary-color)', marginBottom: '10px' }}>{jobStatus}</p>}
-                        <form onSubmit={handleAddJob} className="grid grid-3 gap-20">
-                            <div className="form-group">
-                                <label>Titre</label>
-                                <input name="title" value={newJob.title} onChange={handleNewJobChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Entreprise</label>
-                                <input name="company" value={newJob.company} onChange={handleNewJobChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Pays</label>
-                                <select name="country" value={newJob.country} onChange={handleNewJobChange}>
-                                    <option value="Maroc">Maroc</option>
-                                    <option value="France">France</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Ville</label>
-                                <input name="city" value={newJob.city} onChange={handleNewJobChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Contrat</label>
-                                <select name="contract" value={newJob.contract} onChange={handleNewJobChange}>
-                                    <option value="CDI">CDI</option>
-                                    <option value="CDD">CDD</option>
-                                    <option value="Stage">Stage</option>
-                                    <option value="Alternance">Alternance</option>
-                                </select>
-                            </div>
-                            <div className="form-group">
-                                <label>Domaine</label>
-                                <input name="domain" value={newJob.domain} onChange={handleNewJobChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Salaire indicatif</label>
-                                <input name="salary" value={newJob.salary} onChange={handleNewJobChange} required />
-                            </div>
-                            <div className="form-group">
-                                <label>Mots-clés (séparés par des virgules)</label>
-                                <input name="keywords" value={newJob.keywords} onChange={handleNewJobChange} placeholder="React, Marketing, DevOps" />
-                            </div>
-                            <div className="form-group" style={{ gridColumn: '1 / span 3' }}>
-                                <label>Résumé court</label>
-                                <input name="shortDescription" value={newJob.shortDescription} onChange={handleNewJobChange} required />
-                            </div>
-                            <div className="form-group" style={{ gridColumn: '1 / span 3' }}>
-                                <label>Description détaillée</label>
-                                <textarea name="description" rows="3" value={newJob.description} onChange={handleNewJobChange} required></textarea>
-                            </div>
-                            <div style={{ gridColumn: '1 / span 3' }}>
-                                <button className="btn btn-secondary" type="submit" style={{ width: '100%' }}>Publier l'offre</button>
-                            </div>
-                        </form>
-                    </div>
-
                     <JobList jobs={filteredJobs} onJobClick={setSelectedJob} selectedJobId={selectedJob?.id} />
                 </div>
 
