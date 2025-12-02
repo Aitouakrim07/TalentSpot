@@ -25,6 +25,19 @@
     cursor: pointer;
     letter-spacing: 0.5px;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+/* Large visible company logo next to text */
+.navbar-logo .logo-wordmark {
+    height: 44px; /* prominent but fits 80px header */
+    margin-right: 12px;
+    display: block;
+}
+
+.navbar-logo .brand-text {
+    line-height: 1;
 }
 
 .nav-menu {
@@ -88,6 +101,21 @@
 }
 
 @media screen and (max-width: 960px) {
+    /* Mobile header */
+    .navbar {
+        background: var(--white);
+        box-shadow: var(--shadow);
+    }
+
+    .navbar-logo .logo-wordmark {
+        height: 36px; /* slightly smaller on mobile */
+        margin-right: 10px;
+    }
+
+    .bar {
+        background-color: var(--text-color);
+    }
+
     .nav-menu {
         flex-direction: column;
         width: 100%;
@@ -97,20 +125,20 @@
         left: -100%;
         opacity: 0;
         transition: all 0.4s ease;
-        background: var(--white);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
         padding: 20px;
-        align-items: flex-start; /* Align items to left in mobile */
+        align-items: flex-start;
     }
 
     .nav-menu.active {
         left: 0;
         opacity: 1;
         z-index: 1;
-        box-shadow: var(--shadow);
+        box-shadow: none;
     }
 
     .nav-item {
-        height: auto; /* Allow auto height for spacing */
+        height: auto;
         width: 100%;
     }
 
@@ -120,14 +148,20 @@
         display: block;
         text-align: left;
         height: auto;
+        color: #fff;
+        border-bottom-color: transparent;
+    }
+
+    .nav-links:hover {
+        color: #e6f0ff;
+        border-bottom-color: rgba(255, 255, 255, 0.5);
     }
 
     .menu-icon {
         display: block;
     }
-    
-    /* Ensure User Button and Icon are aligned */
+
     .navbar-container > div {
-        flex-direction: row-reverse; /* Put menu icon on right, user button left of it if needed, or keep as is */
+        flex-direction: row-reverse;
     }
 }

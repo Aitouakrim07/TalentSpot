@@ -16,7 +16,7 @@ const Navbar = () => {
         <nav className="navbar">
             <div className="container navbar-container">
                 <Link to="/" className="navbar-logo" onClick={() => setIsOpen(false)}>
-                    TalentSpot
+                    <span className="brand-text">TalentSpot</span>
                 </Link>
                 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -27,7 +27,7 @@ const Navbar = () => {
                         <span className={isOpen ? 'bar open' : 'bar'}></span>
                     </button>
 
-                    {/* Desktop Menu */}
+                    {/* Desktop/Menu */}
                     <ul className={isOpen ? 'nav-menu active' : 'nav-menu'}>
                         <li className="nav-item">
                             <Link to="/" className="nav-links" onClick={toggleMenu}>Accueil</Link>
