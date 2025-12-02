@@ -174,3 +174,46 @@ ul {
     font-weight: 600;
     font-size: 0.9rem;
 }
+
+@media screen and (max-width: 960px) {
+    /* Existing navbar mobile styles live elsewhere */
+}
+
+/* About page */
+.about-hero-logo {
+    width: 100%;
+    max-width: 420px;
+    height: auto;
+}
+
+.about-ceo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 24px;
+    align-items: center;
+}
+
+.about-ceo-photo img {
+    width: 100%;
+    max-width: 420px;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .about-ceo-grid {
+        grid-template-columns: 1fr; /* stack */
+    }
+    .about-ceo-photo {
+        order: -1; /* photo first on mobile */
+        text-align: center;
+    }
+    .about-ceo-photo img {
+        max-width: 320px; /* bigger than tiny thumbnail */
+    }
+    .about-ceo-text p {
+        font-size: 0.98rem; /* slightly larger readability */
+        line-height: 1.7;
+    }
+}

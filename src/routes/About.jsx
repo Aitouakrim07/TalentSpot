@@ -7,11 +7,11 @@ const About = () => {
                 <h1 className="text-center mb-20" style={{ color: 'var(--primary-color)' }}>Qui sommes-nous ?</h1>
 
                 {/* Company logo hero (subtle, no frame) */}
-                <div className="text-center mb-20">
+                <div className="text-center mb-20 about-hero">
                     <img
                         src="/logo.png"
                         alt="Logo TalentSpot"
-                        style={{ width: '100%', maxWidth: '420px', height: 'auto' }}
+                        className="about-hero-logo"
                     />
                 </div>
 
@@ -29,11 +29,11 @@ const About = () => {
                 </section>
 
                 <section className="mb-20" style={{ background: 'white', padding: '30px', borderRadius: 'var(--radius)', boxShadow: 'var(--shadow)' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '24px', alignItems: 'center' }}>
-                        <div style={{ textAlign: 'center' }}>
-                            <img src="/moha.png" alt="Mohamed Aitouakrim - CEO TalentSpot" style={{ width: '100%', maxWidth: '420px', borderRadius: '12px', boxShadow: 'var(--shadow)' }} />
+                    <div className="about-ceo-grid">
+                        <div className="about-ceo-photo">
+                            <img src="/moham.png" alt="Mohamed Aitouakrim - CEO TalentSpot" />
                         </div>
-                        <div>
+                        <div className="about-ceo-text">
                             <h2 style={{ marginBottom: '10px' }}>Mohamed Aitouakrim</h2>
                             <p style={{ color: 'var(--primary-color)', marginBottom: '12px' }}>CEO & Fondateur</p>
                             <p style={{ marginBottom: '12px' }}>
