@@ -19,9 +19,11 @@ const Home = () => {
                         <Link to="/jobs" className="btn btn-secondary" style={{ marginRight: '15px', padding: '15px 30px', fontSize: '1.1rem' }}>
                             Voir les offres
                         </Link>
+                        {/* Recruiter link hidden temporarily
                         <Link to="/recruiters" className="btn" style={{ background: 'white', color: 'var(--primary-color)', padding: '15px 30px', fontSize: '1.1rem' }}>
                             Je suis recruteur
                         </Link>
+                        */}
                     </div>
                 </div>
             </header>

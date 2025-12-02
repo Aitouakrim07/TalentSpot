@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useAuth, useUser } from "@clerk/clerk-react";
 
 const initialNewJob = {
     title: '',
@@ -16,16 +15,10 @@ const initialNewJob = {
 };
 
 const AdminJobs = () => {
-    const { token, user, logout } = useAuth();
-    const navigate = useNavigate();
+    const { getToken } = useAuth();
+    const { user } = useUser();
     const [newJob, setNewJob] = useState(initialNewJob);
     const [status, setStatus] = useState({ type: '', msg: '' });
-
-    useEffect(() => {
-        if (!token) {
-            navigate('/login');
-        }
-    }, [token, navigate]);
 
     const handleNewJobChange = (e) => {
         const { name, value } = e.target;
@@ -37,6 +30,7 @@ const AdminJobs = () => {
         const keywordsArray = newJob.keywords.split(',').map((k) => k.trim()).filter(Boolean);
         
         try {
+            const token = await getToken();
             const res = await fetch('/api/jobs', {
                 method: 'POST',
                 headers: {
@@ -51,6 +45,7 @@ const AdminJobs = () => {
             setStatus({ type: 'success', msg: 'Offre ajoutée avec succès !' });
             setNewJob(initialNewJob);
         } catch (error) {
+            console.error(error);
             setStatus({ type: 'error', msg: 'Erreur lors de l\'ajout de l\'offre.' });
         }
     };
@@ -61,7 +56,7 @@ const AdminJobs = () => {
         <div className="container" style={{ padding: '40px 0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
                 <h2>Administration - Ajouter une offre</h2>
-                <button onClick={logout} style={{ background: 'red', color: 'white', border: 'none', padding: '8px 16px', cursor: 'pointer' }}>Déconnexion</button>
+                {/* UserButton handles sign out */}
             </div>
 
             {status.msg && (
@@ -135,4 +130,3 @@ const AdminJobs = () => {
 };
 
 export default AdminJobs;
-

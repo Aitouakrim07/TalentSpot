@@ -5,25 +5,19 @@ import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 import nodemailer from 'nodemailer';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { ClerkExpressRequireAuth, createClerkClient } from '@clerk/clerk-sdk-node';
 
-import connectDB from './db.js';
-import Job from './models/Job.js';
-import Candidature from './models/Candidature.js';
-import User from './models/User.js';
+import prisma from './lib/prisma.js';
 
 dotenv.config();
 
 const app = express();
+const clerkClient = createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Connect DB
-connectDB();
 
 // Cloudinary Config
 cloudinary.config({
@@ -34,10 +28,21 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-        folder: 'candidatures',
-        allowed_formats: ['pdf', 'doc', 'docx'],
-        resource_type: 'raw' 
+    params: async (req, file) => {
+        // Compute filename based on original name but safe
+        const originalName = file.originalname.replace(/\.[^/.]+$/, "");
+        
+        // Return format based on mimetype or original extension to preserve it
+        let format = 'pdf';
+        if (file.mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') format = 'docx';
+        if (file.mimetype === 'application/msword') format = 'doc';
+
+        return {
+            folder: 'candidatures',
+            resource_type: 'auto', // Let Cloudinary detect
+            public_id: `${Date.now()}-${originalName}`,
+            format: format // Force the correct extension
+        };
     }
 });
 
@@ -56,25 +61,24 @@ const transporter = nodemailer.createTransport({
 
 const EMAIL_TO = process.env.EMAIL_TO || process.env.SMTP_USER;
 
-// Auth Middleware
-const authenticateToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    if (!token) return res.sendStatus(401);
+// Helper: Check Role
+const requireRole = (allowedRoles) => {
+    return async (req, res, next) => {
+        try {
+            const { userId } = req.auth;
+            if (!userId) return res.status(401).json({ message: 'Unauthorized' });
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
-        next();
-    });
-};
+            const user = await clerkClient.users.getUser(userId);
+            const userRole = user.publicMetadata.role;
 
-const requireRole = (role) => {
-    return (req, res, next) => {
-        if (req.user.role !== role && req.user.role !== 'admin') {
-            return res.status(403).json({ message: 'Forbidden' });
+            if (!allowedRoles.includes(userRole)) {
+                return res.status(403).json({ message: 'Forbidden' });
+            }
+            next();
+        } catch (error) {
+            console.error('Role Check Error:', error);
+            res.status(500).json({ message: 'Internal Server Error' });
         }
-        next();
     };
 };
 
@@ -84,73 +88,48 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', env: process.env.NODE_ENV });
 });
 
-// AUTH
-app.post('/api/auth/register', async (req, res) => {
-    // Simple protection: only allow if no users exist OR if authenticated as admin
-    // For initial setup, we'll allow it if DB is empty.
-    try {
-        const count = await User.countDocuments();
-        if (count > 0) {
-             // If users exist, require admin token (TODO: implement checking header here if strictly needed, 
-             // but for now we'll just block public registration if users exist to prevent abuse)
-             // Ideally, you'd check auth here. For simplicity in this 'free stack' tutorial:
-             return res.status(403).json({ message: "Registration is closed. Ask an admin." });
-        }
-
-        const { username, password, role } = req.body;
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user = new User({ username, password: hashedPassword, role: role || 'recruiter' });
-        await user.save();
-        res.status(201).json({ message: 'User created' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-app.post('/api/auth/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
-        const user = await User.findOne({ username });
-        if (!user) return res.status(400).json({ message: 'User not found' });
-
-        const validPassword = await bcrypt.compare(password, user.password);
-        if (!validPassword) return res.status(400).json({ message: 'Invalid password' });
-
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-        res.json({ token, role: user.role, username: user.username });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
 // JOBS
 app.get('/api/jobs', async (req, res) => {
     try {
-        const jobs = await Job.find().sort({ createdAt: -1 });
+        const jobs = await prisma.job.findMany({
+            orderBy: { createdAt: 'desc' }
+        });
         res.json(jobs);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
 });
 
-app.post('/api/jobs', authenticateToken, requireRole('recruiter'), async (req, res) => {
-    try {
-        const job = new Job(req.body);
-        await job.save();
-        res.status(201).json(job);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+// Protect: Only 'recruiter' or 'admin' can add jobs
+app.post('/api/jobs', 
+    ClerkExpressRequireAuth(), 
+    requireRole(['recruiter', 'admin']), 
+    async (req, res) => {
+        try {
+            const job = await prisma.job.create({
+                data: req.body
+            });
+            res.status(201).json(job);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-});
+);
 
-app.delete('/api/jobs/:id', authenticateToken, requireRole('admin'), async (req, res) => {
-    try {
-        await Job.findByIdAndDelete(req.params.id);
-        res.json({ message: 'Job deleted' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+app.delete('/api/jobs/:id', 
+    ClerkExpressRequireAuth(), 
+    requireRole(['admin']), 
+    async (req, res) => {
+        try {
+            await prisma.job.delete({
+                where: { id: req.params.id }
+            });
+            res.json({ message: 'Job deleted' });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
     }
-});
+);
 
 // CANDIDATURE (Public + Upload)
 app.post('/api/candidature', upload.single('cv'), async (req, res) => {
@@ -161,12 +140,13 @@ app.post('/api/candidature', upload.single('cv'), async (req, res) => {
 
         const { name, email, country, city, domain, coverLetter, jobId, jobTitle } = req.body;
 
-        // Save to DB
-        const newCandidature = new Candidature({
-            name, email, country, city, domain, coverLetter, jobId, jobTitle,
-            cvUrl: req.file.path // Cloudinary URL
+        // Save to DB via Prisma
+        await prisma.candidature.create({
+            data: {
+                name, email, country, city, domain, coverLetter, jobId, jobTitle,
+                cvUrl: req.file.path
+            }
         });
-        await newCandidature.save();
 
         // Send Email
         const emailText = `Nouvelle candidature:
@@ -179,7 +159,7 @@ Offre: ${jobTitle || 'Non spécifiée'} (id: ${jobId || 'N/A'})
 Lettre de motivation:
 ${coverLetter || 'Non fournie'}
 
-Lien CV: ${req.file.path}`; // Note: path is the URL in CloudinaryStorage
+Lien CV: ${req.file.path}`;
 
         await transporter.sendMail({
             from: EMAIL_TO,
@@ -223,4 +203,3 @@ ${message}`;
 });
 
 export default app;
-

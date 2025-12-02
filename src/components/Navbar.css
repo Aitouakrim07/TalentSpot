@@ -24,6 +24,7 @@
     font-size: 1.5rem;
     cursor: pointer;
     letter-spacing: 0.5px;
+    text-decoration: none;
 }
 
 .nav-menu {
@@ -31,6 +32,8 @@
     list-style: none;
     text-align: center;
     gap: 6px;
+    margin: 0; /* Reset default ul margin */
+    padding: 0;
 }
 
 .nav-item {
@@ -96,6 +99,7 @@
         transition: all 0.4s ease;
         background: var(--white);
         padding: 20px;
+        align-items: flex-start; /* Align items to left in mobile */
     }
 
     .nav-menu.active {
@@ -105,14 +109,25 @@
         box-shadow: var(--shadow);
     }
 
+    .nav-item {
+        height: auto; /* Allow auto height for spacing */
+        width: 100%;
+    }
+
     .nav-links {
         padding: 1rem 0;
         width: 100%;
         display: block;
         text-align: left;
+        height: auto;
     }
 
     .menu-icon {
         display: block;
+    }
+    
+    /* Ensure User Button and Icon are aligned */
+    .navbar-container > div {
+        flex-direction: row-reverse; /* Put menu icon on right, user button left of it if needed, or keep as is */
     }
 }
