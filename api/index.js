@@ -59,7 +59,13 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const EMAIL_TO = process.env.EMAIL_TO || process.env.SMTP_USER;
+// Email config
+const DEFAULT_FROM = process.env.SMTP_USER;
+const EMAIL_RECIPIENTS = (process.env.EMAIL_TO || '')
+  .split(/[;,]/)
+  .map(s => s.trim())
+  .filter(Boolean);
+if (EMAIL_RECIPIENTS.length === 0) EMAIL_RECIPIENTS.push(DEFAULT_FROM);
 
 // Helper: Check Role
 const requireRole = (allowedRoles) => {
@@ -162,10 +168,11 @@ ${coverLetter || 'Non fournie'}
 Lien CV: ${req.file.path}`;
 
         await transporter.sendMail({
-            from: EMAIL_TO,
-            to: EMAIL_TO,
+            from: DEFAULT_FROM,
+            to: EMAIL_RECIPIENTS,
             subject: `Candidature reçue - ${name} - ${jobTitle || 'Spontanée'}`,
-            text: emailText
+            text: emailText,
+            replyTo: email
         });
 
         res.json({ success: true, message: 'Candidature reçue avec succès.' });
@@ -189,10 +196,11 @@ Message:
 ${message}`;
 
         await transporter.sendMail({
-            from: EMAIL_TO,
-            to: EMAIL_TO,
+            from: DEFAULT_FROM,
+            to: EMAIL_RECIPIENTS,
             subject: `Contact - ${type} - ${name}`,
-            text: emailText
+            text: emailText,
+            replyTo: email
         });
 
         res.json({ success: true, message: 'Message envoyé.' });
