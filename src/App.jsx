@@ -12,6 +12,8 @@ import Login from './routes/Login';
 import Register from './routes/Register';
 import AdminJobs from './routes/AdminJobs';
 import { Protect } from './components/Protect';
+import Confidentialite from './routes/Confidentialite';
+import MentionsLegales from './routes/MentionsLegales';
 
 function App() {
     return (
@@ -40,6 +42,8 @@ function App() {
                                 </Protect>
                             }
                         />
+                        <Route path="/confidentialite" element={<Confidentialite />} />
+                        <Route path="/mentions-legales" element={<MentionsLegales />} />
                     </Routes>
                 </main>
                 <Footer />
